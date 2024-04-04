@@ -9,6 +9,37 @@
 #include "common.h"
 #include "parse.h"
 
+int remove_employees(struct dbheader_t *dbhdr, struct employee_t **employees, char *remove_name) {
+    int r_count = 0;
+    int k = 0;
+
+    for(int i = 0; i < dbhdr -> count; i++) {
+        if(strcmp((*employees)[i].name, remove_name) == 0) {
+            r_count++;
+        }
+    }
+
+    if(r_count == 0) {
+        printf("Could not find %s enployee in the data base\n", remove_name);
+        return STATUS_SUCCESS;
+    }
+
+    struct employee_t *temp_employees = malloc((dbhdr -> count - r_count) * sizeof(struct employee_t));
+
+    for(int i = 0; i < dbhdr -> count; i++) {
+        if(strcmp(remove_name, (*employees)[i].name) != 0) {
+            temp_employees[k++] = (*employees)[i];
+        }
+    }
+
+    free(*employees);
+
+    *employees = temp_employees;
+
+    dbhdr -> count -= r_count;
+    return STATUS_SUCCESS;
+}
+
 void list_employees(struct dbheader_t *dbhdr, struct employee_t *employees) {
     int i = 0;
     for(; i < dbhdr->count; i++) {

@@ -11,6 +11,9 @@ void printf_usage(char * argv[]){
     printf("Usage: %s -n -f <filepath>\n", argv[0]);
     printf("\t -n - create new database file\n");
     printf("\t -f - (required) path to database file\n");
+    printf("\t -a - add employee to the database\n");
+    printf("\t -l - list all the empoyees\n");
+    printf("\t -r - removes empoyees with the same name\n");
 }
 
 int main(int argc, char * argv[]) {
@@ -18,16 +21,15 @@ int main(int argc, char * argv[]) {
     bool newfile = false;
     char * filepath = NULL;
     char * addstring = NULL;
-    char * nameToRemove = NULL;
+    char * removestring = NULL;
     bool list = false;
-    bool removestring = false;
     int c;
 
     int dbfd = -1;
     struct dbheader_t *dbhdr = NULL;
     struct employee_t *employees = NULL;
 
-    while((c = getopt(argc, argv, "nf:ar:l")) != -1) {
+    while((c = getopt(argc, argv, "nf:a:r:l")) != -1) {
         switch(c){
             case 'n':
                 newfile = true;
@@ -42,8 +44,7 @@ int main(int argc, char * argv[]) {
                 list = true;
                 break;
             case 'r':
-                nameToRemove = optarg;
-                remove = true;
+                removestring = optarg;
                 break;
             case '?':
                 printf("Unknown option -%c\n", c);
@@ -58,7 +59,12 @@ int main(int argc, char * argv[]) {
         printf_usage(argv);
         return 0;
     }
-    
+
+    if(addstring != NULL && removestring != NULL) {
+        printf("can not add and remove the employees at the same time\n");
+        printf_usage(argv);
+        return -1;
+    }
 
     if(newfile){
         dbfd = create_db_file(filepath);
@@ -96,6 +102,10 @@ int main(int argc, char * argv[]) {
     }
 
     if(removestring) {
+        if(remove_employees(dbhdr, &employees, removestring) != STATUS_SUCCESS) {
+            printf("Failed to remove employees\n");
+            return -1;
+        }
     }
 
     if(list) {
